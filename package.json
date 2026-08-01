@@ -1,0 +1,14 @@
+{
+    "name": "notifykit-workspace",
+    "private": true,
+    "type": "module",
+    "workspaces": [
+        "packages/*"
+    ],
+    "devDependencies": {
+        "@types/node": "^26.1.2"
+    },
+    "scripts": {
+        "dev:cli": "bun run packages/cli/src/index.ts"
+    }
+}
