@@ -9,6 +9,7 @@
         "@types/node": "^26.1.2"
     },
     "scripts": {
-        "dev:cli": "bun run packages/cli/src/index.ts"
+        "dev:cli": "bun run packages/cli/src/index.ts",
+        "dev:local-mcp": "bun run packages/local-mcp/src/index.ts"
     }
 }
