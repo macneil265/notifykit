@@ -1,57 +1,132 @@
-import { Hono } from "hono";
+import { Context, Hono } from "hono";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
-import { createNotifykitServer } from "notifykit-mcp/server";
+import { createClerkClient } from "@clerk/backend";
+import { generateClerkProtectedResourceMetadata } from "@clerk/mcp-tools/server";
+import {
+  sendTelegramMessage,
+  telegramMessageInputSchema,
+} from "notifykit-core";
+
+const clerkPublishableKey = process.env.CLERK_PUBLISHABLE_KEY;
+const clerkSecretKey = process.env.CLERK_SECRET_KEY;
+
+if (!clerkPublishableKey || !clerkSecretKey) {
+  throw new Error("CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY must be set");
+}
+
+const clerkClient = createClerkClient({
+  publishableKey: clerkPublishableKey,
+  secretKey: clerkSecretKey,
+});
+
+function createServer(botToken: string): McpServer {
+  const server = new McpServer({
+    name: "notifykit-mcp",
+    version: "0.0.0",
+  });
+
+  server.registerTool(
+    "telegram",
+    {
+      title: "Telegram",
+      description: "Send a Telegram message to a chat",
+      inputSchema: telegramMessageInputSchema.shape,
+    },
+    async (input) => {
+      const result = await sendTelegramMessage({
+        ...input,
+        botToken,
+      });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Sent Telegram message ${result.messageId} to chat ${result.chatId}`,
+          },
+        ],
+        structuredContent: result,
+      };
+    },
+  );
+
+  return server;
+}
 
 const app = new Hono();
 
-function isAuthorized(request: Request): boolean {
-  const expected = process.env.NOTIFY_MCP_TOKEN;
-  if (!expected) {
-    return true;
-  }
-  return request.headers.get("authorization") === `Bearer ${expected}`;
+function protectedResourceMetadataUrl(c: Context, botToken: string){
+  return new URL(
+    `/.well-known/oauth-protected-resource/${botToken}/mcp`, c.req.url).toString();
 }
 
-app.all("/mcp", async (c) => {
-  if (!isAuthorized(c.req.raw)) {
-    return c.json({ error: "Unauthorized" }, 401);
+function unauthorizedMcpResponse(c: Context, botToken: string){
+  c.header(
+    "WWW-Authenticate",
+    `Bearer resource_metadata="${protectedResourceMetadataUrl(c, botToken)}"`,
+  );
+  return c.json({ error: "Unauthorized" }, 401);
+}
+
+app.get("/.well-known/oauth-protected-resource/:botToken/mcp", (c) => {
+  return c.json(
+    generateClerkProtectedResourceMetadata({
+      publishableKey: clerkPublishableKey,
+      resourceUrl: new URL(
+        `/${c.req.param("botToken")}/mcp`,
+        c.req.url,
+      ).toString(),
+    }),
+  );
+});
+
+app.post("/:botToken/mcp", async (c) => {
+  const botToken = c.req.param("botToken");
+
+  try {
+    const requestState = await clerkClient.authenticateRequest(c.req.raw, {
+      acceptsToken: "oauth_token",
+    });
+
+    if (!requestState.isAuthenticated) {
+      return unauthorizedMcpResponse(c, botToken);
+    }
+  } catch {
+    return unauthorizedMcpResponse(c, botToken);
   }
 
-  const server = createNotifykitServer();
+  const server = createServer(botToken);
+
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,
   });
 
+  await server.connect(transport);
+
   try {
-    await server.connect(transport);
-    const raw = await transport.handleRequest(c.req.raw);
-    const body = await raw.arrayBuffer();
+    return await transport.handleRequest(c.req.raw);
+  } finally {
     await server.close();
-    await transport.close();
-    return new Response(body, {
-      status: raw.status,
-      headers: raw.headers,
-    });
-  } catch (error) {
-    await server.close();
-    await transport.close();
-    console.error("MCP request failed:", error);
-    return c.json({ error: "Internal Server Error" }, 500);
   }
 });
 
-app.get("/health", (c) => c.json({ status: "ok" }));
-
 app.notFound((c) => c.json({ error: "Not found" }, 404));
 
-const hostname = process.env.HOST ?? "0.0.0.0";
+// console.error(
+//   `notifykit remote MCP listening on http://localhost:${Number(process.env.PORT ?? 3000)}/:botToken/mcp`,
+// );
+
 const port = Number(process.env.PORT ?? 3000);
 
-console.error(`notifykit remote MCP listening on http://${hostname}:${port}/mcp`);
-
-Bun.serve({
-  hostname,
+export default {
   port,
-  fetch: app.fetch,
-});
+  fetch: (req: Request) => {
+    const url = new URL(req.url);
+    url.protocol = req.headers.get("x-forwarded-proto") ?? url.protocol;
+    url.host = req.headers.get("x-forwarded-host") ?? url.host;
+
+    return app.fetch(new Request(url, req));
+  },
+};
