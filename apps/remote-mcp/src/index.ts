@@ -3,10 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { createClerkClient } from "@clerk/backend";
 import { generateClerkProtectedResourceMetadata } from "@clerk/mcp-tools/server";
-import {
-  sendTelegramMessage,
-  telegramMessageInputSchema,
-} from "notifykit-core";
+import { sendTelegramMessage, telegramMessageInputSchema } from "notifykit-core";
 
 const clerkPublishableKey = process.env.CLERK_PUBLISHABLE_KEY;
 const clerkSecretKey = process.env.CLERK_SECRET_KEY;
@@ -56,12 +53,11 @@ function createServer(botToken: string): McpServer {
 
 const app = new Hono();
 
-function protectedResourceMetadataUrl(c: Context, botToken: string){
-  return new URL(
-    `/.well-known/oauth-protected-resource/${botToken}/mcp`, c.req.url).toString();
+function protectedResourceMetadataUrl(c: Context, botToken: string) {
+  return new URL(`/.well-known/oauth-protected-resource/${botToken}/mcp`, c.req.url).toString();
 }
 
-function unauthorizedMcpResponse(c: Context, botToken: string){
+function unauthorizedMcpResponse(c: Context, botToken: string) {
   c.header(
     "WWW-Authenticate",
     `Bearer resource_metadata="${protectedResourceMetadataUrl(c, botToken)}"`,
@@ -73,10 +69,7 @@ app.get("/.well-known/oauth-protected-resource/:botToken/mcp", (c) => {
   return c.json(
     generateClerkProtectedResourceMetadata({
       publishableKey: clerkPublishableKey,
-      resourceUrl: new URL(
-        `/${c.req.param("botToken")}/mcp`,
-        c.req.url,
-      ).toString(),
+      resourceUrl: new URL(`/${c.req.param("botToken")}/mcp`, c.req.url).toString(),
     }),
   );
 });

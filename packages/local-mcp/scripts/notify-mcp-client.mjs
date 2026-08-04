@@ -11,7 +11,10 @@ const transport = new StdioClientTransport({
 const client = new Client({ name: "opencode-test", version: "1.0.0" });
 await client.connect(transport);
 const tools = await client.listTools();
-console.log("Available MCP tools:", tools.tools.map((t) => t.name));
+console.log(
+  "Available MCP tools:",
+  tools.tools.map((t) => t.name),
+);
 const result = await client.callTool({
   name: "telegram",
   arguments: { chatId: "5823551811", message: "Hello from opencode local-mcp" },

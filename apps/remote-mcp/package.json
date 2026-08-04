@@ -1,19 +1,16 @@
 {
-    "name": "notifykit-remote-mcp",
-    "version": "0.0.0",
-    "private": "true",
-    "type": "module",
-    "exports": {
-        ".": "./src/index.ts"
-    },
-    "devDependencies": {
-        "@types/node": "^26.1.2"
-    },
-    "dependencies": {
-        "@clerk/backend": "^3.15.0",
-        "@clerk/mcp-tools": "^0.6.0",
-        "@modelcontextprotocol/sdk": "^1.30.0",
-        "hono": "^4.12.33",
-        "notifykit-core": "workspace:*"
-    }
+  "name": "notifykit-remote-mcp",
+  "version": "0.0.0",
+  "private": "true",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@clerk/backend": "^3.15.0",
+    "@clerk/mcp-tools": "^0.6.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "hono": "^4.12.33",
+    "notifykit-core": "workspace:*"
+  }
 }

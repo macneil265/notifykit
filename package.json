@@ -1,17 +1,26 @@
 {
-    "name": "notifykit-workspace",
-    "private": true,
-    "type": "module",
-    "workspaces": [
-        "apps/*",
-        "packages/*"
-    ],
-    "devDependencies": {
-        "@types/node": "^26.1.2"
-    },
-"scripts": {
-        "dev:cli": "bun run packages/cli/src/index.ts",
-        "dev:local-mcp": "bun run packages/local-mcp/src/index.ts",
-        "dev:remote-mcp": "bun run apps/remote-mcp/src/index.ts"
-    }
+  "name": "notifykit-workspace",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "format": "oxfmt . --write",
+    "format:check": "oxfmt . --check",
+    "lint": "oxlint . --deny-warnings",
+    "lint:fix": "oxlint . --fix",
+    "dev:cli": "bun run packages/cli/src/index.ts",
+    "dev:local-mcp": "bun run packages/local-mcp/src/index.ts",
+    "dev:remote-mcp": "bun run apps/remote-mcp/src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "oxfmt": "^0.62.0",
+    "oxlint": "^1.77.0",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2"
+  }
 }

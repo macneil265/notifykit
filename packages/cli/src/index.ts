@@ -13,13 +13,9 @@ const cliConfigSchema = z.object({
 
 function writeTelegramBotToken(token: string) {
   mkdirSync(dirname(configPath), { recursive: true });
-  writeFileSync(
-    configPath,
-    `${JSON.stringify({ telegramBotToken: token }, null, 2)}\n`,
-    {
-      mode: 0o600,
-    },
-  );
+  writeFileSync(configPath, `${JSON.stringify({ telegramBotToken: token }, null, 2)}\n`, {
+    mode: 0o600,
+  });
 }
 
 function getTelegramBotToken() {
@@ -27,9 +23,7 @@ function getTelegramBotToken() {
     throw new Error("Telegram bot token is required. = Run `notifyKit init`.");
   }
 
-  const config = cliConfigSchema.parse(
-    JSON.parse(readFileSync(configPath, "utf-8")),
-  );
+  const config = cliConfigSchema.parse(JSON.parse(readFileSync(configPath, "utf-8")));
   const token = config.telegramBotToken;
 
   if (!token) {
@@ -39,18 +33,16 @@ function getTelegramBotToken() {
   return token;
 }
 
-program
-.name("notifykit")
-.description("NotifyKit CLI backed by notifykit-core");
+program.name("notifykit").description("NotifyKit CLI backed by notifykit-core");
 
 program
   .command("init")
   .description("Configure NotifyKit CLI local settings")
   .requiredOption("--telegram-bot-token <token>", "Telegram bot token")
-  .action(async( options:{ telegramBotToken: string }) => {
+  .action(async (options: { telegramBotToken: string }) => {
     writeTelegramBotToken(options.telegramBotToken);
     console.log(`Saved NotifyKit CLI config to ${configPath}`);
-  })
+  });
 
 program
   .command("telegram")
@@ -58,15 +50,14 @@ program
   .argument("<chatId>", "Telegram chat ID")
   .argument("<message>", "Message text to send")
   .action(async (chatId: string, message: string) => {
-      const result = await sendTelegramMessage({
-        botToken: getTelegramBotToken(),
-        chatId,
-        message,
-      });
+    const result = await sendTelegramMessage({
+      botToken: getTelegramBotToken(),
+      chatId,
+      message,
+    });
 
-      console.log(JSON.stringify(result))
-     
-      });
+    console.log(JSON.stringify(result));
+  });
 
 await program.parseAsync(process.argv).catch((error: unknown) => {
   console.error(error instanceof Error ? error.message : String(error));
