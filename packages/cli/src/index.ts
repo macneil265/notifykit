@@ -3,7 +3,7 @@ import { z } from "zod";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { sendTelegramMessage } from "notifykit-core";
+import { sendTelegramMessage } from "@signal_stack/notifykit-core";
 
 const program = new Command();
 const configPath = join(homedir(), ".config", "notifykit", "config.json");

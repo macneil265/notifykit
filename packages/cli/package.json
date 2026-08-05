@@ -1,11 +1,14 @@
 {
-  "name": "notifykit",
+  "name": "@signal_stack/notifykit",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "dependencies": {
+    "@signal_stack/notifykit-core": "workspace:*",
     "commander": "^15.0.0",
-    "notifykit-core": "workspace:*",
     "zod": "^4.4.3"
+  },
+  "scripts": {
+    "build": "tsdown"
   }
 }

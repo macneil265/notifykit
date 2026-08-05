@@ -10,7 +10,7 @@
     "@clerk/backend": "^3.15.0",
     "@clerk/mcp-tools": "^0.6.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
-    "hono": "^4.12.33",
-    "notifykit-core": "workspace:*"
+    "@signal_stack/notifykit-core": "workspace:*",
+    "hono": "^4.12.33"
   }
 }

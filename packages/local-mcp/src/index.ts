@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { telegramMessageInputSchema, sendTelegramMessage } from "notifykit-core";
+import { telegramMessageInputSchema, sendTelegramMessage } from "@signal_stack/notifykit-core";
 
 const server = new McpServer({
   name: "notifykit-mcp",

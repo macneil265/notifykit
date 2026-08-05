@@ -1,14 +1,17 @@
 {
-  "name": "notifykit-mcp",
+  "name": "@signal_stack/notifykit-mcp",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
+  "scripts": {
+    "build": "tsdown"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
-    "notifykit-core": "workspace:*",
+    "@signal_stack/notifykit-core": "workspace:*",
     "zod": "^4.4.3"
   }
 }
