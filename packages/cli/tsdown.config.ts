@@ -8,10 +8,10 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   platform: "node",
-  target: "node20",
+  target: "ES2022",
   outDir: "dist",
   outExtensions: () => ({ js: ".js", dts: ".d.ts" }),
   deps: {
-    neverBundle: ["@signal_stack/notifykit-core", "@modelcontextprotocol/sdk", "zod"],
+    neverBundle: ["commander", "zod", "@signal_stack/notifykit-core"],
   },
 });

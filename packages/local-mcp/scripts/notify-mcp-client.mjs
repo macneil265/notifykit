@@ -1,11 +1,16 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
+const token = process.env.TELEGRAM_BOT_TOKEN;
+if (!token) {
+  throw new Error("TELEGRAM_BOT_TOKEN is required");
+}
+
 const transport = new StdioClientTransport({
   command: "bun",
   args: ["run", "dev:local-mcp"],
   cwd: "/home/mackiee/Documents/applications/notifykit",
-  env: { TELEGRAM_BOT_TOKEN: "TELEGRAM_BOT_TOKEN_ROTATED" },
+  env: { TELEGRAM_BOT_TOKEN: token },
 });
 
 const client = new Client({ name: "opencode-test", version: "1.0.0" });

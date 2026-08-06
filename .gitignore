@@ -5,6 +5,7 @@ dist/
 !.env.example
 .DS_store
 *.log
+*.tgz
 
 .mcp.json
 opencode.json
