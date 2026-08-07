@@ -7,7 +7,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "start": "cd ../../ && bun run apps/remote-mcp/src/index.ts"
+    "start": "bun run src/index.ts"
   },
   "dependencies": {
     "@clerk/backend": "^3.15.0",

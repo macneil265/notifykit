@@ -5,17 +5,33 @@ import { createClerkClient } from "@clerk/backend";
 import { generateClerkProtectedResourceMetadata } from "@clerk/mcp-tools/server";
 import { sendTelegramMessage, telegramMessageInputSchema } from "@signal_stack/notifykit-core";
 
-const clerkPublishableKey = process.env.CLERK_PUBLISHABLE_KEY;
-const clerkSecretKey = process.env.CLERK_SECRET_KEY;
-
-if (!clerkPublishableKey || !clerkSecretKey) {
-  throw new Error("CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY must be set");
+export interface Env {
+  CLERK_PUBLISHABLE_KEY?: string;
+  CLERK_SECRET_KEY?: string;
+  NO_AUTH_BOT_TOKENS?: string;
 }
 
-const clerkClient = createClerkClient({
-  publishableKey: clerkPublishableKey,
-  secretKey: clerkSecretKey,
-});
+interface ClerkState {
+  publishableKey: string;
+  client: ReturnType<typeof createClerkClient>;
+}
+
+let clerkState: ClerkState | undefined;
+
+function getClerkState(env: Env): ClerkState {
+  if (!clerkState) {
+    const publishableKey = env.CLERK_PUBLISHABLE_KEY;
+    const secretKey = env.CLERK_SECRET_KEY;
+    if (!publishableKey || !secretKey) {
+      throw new Error("CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY must be set");
+    }
+    clerkState = {
+      publishableKey,
+      client: createClerkClient({ publishableKey, secretKey }),
+    };
+  }
+  return clerkState;
+}
 
 function createServer(botToken: string): McpServer {
   const server = new McpServer({
@@ -51,7 +67,7 @@ function createServer(botToken: string): McpServer {
   return server;
 }
 
-const app = new Hono();
+const app = new Hono<{ Bindings: Env }>();
 
 function protectedResourceMetadataUrl(c: Context, botToken: string) {
   return new URL(`/.well-known/oauth-protected-resource/${botToken}/mcp`, c.req.url).toString();
@@ -65,10 +81,16 @@ function unauthorizedMcpResponse(c: Context, botToken: string) {
   return c.json({ error: "Unauthorized" }, 401);
 }
 
+app.onError((err, c) => {
+  console.error(err);
+  return c.json({ error: "Internal server error" }, 500);
+});
+
 app.get("/.well-known/oauth-protected-resource/:botToken/mcp", (c) => {
+  const { publishableKey } = getClerkState(c.env);
   return c.json(
     generateClerkProtectedResourceMetadata({
-      publishableKey: clerkPublishableKey,
+      publishableKey,
       resourceUrl: new URL(`/${c.req.param("botToken")}/mcp`, c.req.url).toString(),
     }),
   );
@@ -76,17 +98,24 @@ app.get("/.well-known/oauth-protected-resource/:botToken/mcp", (c) => {
 
 app.post("/:botToken/mcp", async (c) => {
   const botToken = c.req.param("botToken");
+  const noAuthTokens = (c.env.NO_AUTH_BOT_TOKENS ?? "")
+    .split(",")
+    .map((t) => t.trim());
 
-  try {
-    const requestState = await clerkClient.authenticateRequest(c.req.raw, {
-      acceptsToken: "oauth_token",
-    });
+  if (!noAuthTokens.includes(botToken)) {
+    const { client } = getClerkState(c.env);
 
-    if (!requestState.isAuthenticated) {
+    try {
+      const requestState = await client.authenticateRequest(c.req.raw, {
+        acceptsToken: "oauth_token",
+      });
+
+      if (!requestState.isAuthenticated) {
+        return unauthorizedMcpResponse(c, botToken);
+      }
+    } catch {
       return unauthorizedMcpResponse(c, botToken);
     }
-  } catch {
-    return unauthorizedMcpResponse(c, botToken);
   }
 
   const server = createServer(botToken);
@@ -107,19 +136,8 @@ app.post("/:botToken/mcp", async (c) => {
 
 app.notFound((c) => c.json({ error: "Not found" }, 404));
 
-// console.error(
-//   `notifykit remote MCP listening on http://localhost:${Number(process.env.PORT ?? 3000)}/:botToken/mcp`,
-// );
-
-const port = Number(process.env.PORT ?? 3000);
-
 export default {
-  port,
-  fetch: (req: Request) => {
-    const url = new URL(req.url);
-    url.protocol = req.headers.get("x-forwarded-proto") ?? url.protocol;
-    url.host = req.headers.get("x-forwarded-host") ?? url.host;
-
-    return app.fetch(new Request(url, req));
+  fetch(request: Request, env: Env) {
+    return app.fetch(request, env);
   },
 };

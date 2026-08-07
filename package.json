@@ -17,6 +17,8 @@
     "dev:cli": "bun run packages/cli/src/index.ts",
     "dev:local-mcp": "bun run packages/local-mcp/src/index.ts",
     "dev:remote-mcp": "bun run apps/remote-mcp/src/index.ts",
+    "dev:remote-mcp:cf": "cd apps/remote-mcp && wrangler dev",
+    "deploy:remote-mcp:cf": "cd apps/remote-mcp && wrangler deploy",
     "release:pack:core": "bun run --filter @signal_stack/notifykit-core pack:dry",
     "release:pack:cli": "bun run --filter @signal_stack/notifykit pack:dry",
     "release:pack:local-mcp": "bun run --filter @signal_stack/notifykit-mcp pack:dry",
@@ -27,6 +29,7 @@
     "oxfmt": "^0.62.0",
     "oxlint": "^1.77.0",
     "tsdown": "^0.22.14",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "wrangler": "^4.68.0"
   }
 }
