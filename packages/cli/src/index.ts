@@ -1,10 +1,15 @@
 #!/usr/bin/env node
+import { setDefaultResultOrder } from "node:dns";
+import { setDefaultAutoSelectFamily } from "node:net";
 import { Command } from "commander";
 import { z } from "zod";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { sendTelegramMessage } from "@signal_stack/notifykit-core";
+
+setDefaultResultOrder("ipv4first");
+setDefaultAutoSelectFamily(false);
 
 const program = new Command();
 const configPath = join(homedir(), ".config", "notifykit", "config.json");
@@ -21,7 +26,7 @@ function writeTelegramBotToken(token: string) {
 
 function getTelegramBotToken() {
   if (!existsSync(configPath)) {
-    throw new Error("Telegram bot token is required. = Run `notifyKit init`.");
+    throw new Error("Telegram bot token is required. Run `notifykit init`.");
   }
 
   const config = cliConfigSchema.parse(JSON.parse(readFileSync(configPath, "utf-8")));

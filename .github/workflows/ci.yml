@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run typecheck
+      - run: bun run lint
+      - run: bun test
+
+      - run: bun run build:core
+      - run: bun run build:cli
+      - run: bun run build:local-mcp
+
+      - name: Publish smoke test (requires secrets)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          NOTIFYKIT_CHAT_ID: ${{ secrets.NOTIFYKIT_CHAT_ID }}
+        run: bun test packages/core/test/integration.test.ts

@@ -22,10 +22,13 @@
     "release:pack:core": "bun run --filter @signal_stack/notifykit-core pack:dry",
     "release:pack:cli": "bun run --filter @signal_stack/notifykit pack:dry",
     "release:pack:local-mcp": "bun run --filter @signal_stack/notifykit-mcp pack:dry",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
   },
   "devDependencies": {
+    "@types/bun": "^1.2.0",
     "@types/node": "^26.1.2",
+    "bun-types": "1.3.14",
     "oxfmt": "^0.62.0",
     "oxlint": "^1.77.0",
     "tsdown": "^0.22.14",

@@ -1,6 +1,6 @@
 {
   "name": "notifykit-remote-mcp",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": "true",
   "type": "module",
   "exports": {
@@ -13,7 +13,7 @@
     "@clerk/backend": "^3.15.0",
     "@clerk/mcp-tools": "^0.6.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
-    "@signal_stack/notifykit-core": "0.0.0",
+    "@signal_stack/notifykit-core": "^0.0.1",
     "hono": "^4.12.33"
   }
 }

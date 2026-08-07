@@ -1,12 +1,17 @@
 #!/usr/bin/env node
 
+import { setDefaultResultOrder } from "node:dns";
+import { setDefaultAutoSelectFamily } from "node:net";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { telegramMessageInputSchema, sendTelegramMessage } from "@signal_stack/notifykit-core";
 
+setDefaultResultOrder("ipv4first");
+setDefaultAutoSelectFamily(false);
+
 const server = new McpServer({
   name: "notifykit-mcp",
-  version: "0.0.0",
+  version: "0.0.3",
 });
 
 function getTelegramBotToken() {

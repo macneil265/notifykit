@@ -36,7 +36,7 @@ function getClerkState(env: Env): ClerkState {
 function createServer(botToken: string): McpServer {
   const server = new McpServer({
     name: "notifykit-mcp",
-    version: "0.0.0",
+    version: "0.0.1",
   });
 
   server.registerTool(
