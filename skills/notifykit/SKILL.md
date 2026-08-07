@@ -30,21 +30,27 @@ Configure it in the MCP client with the bot token available to the server proces
 
 ## CLI
 
-The `@signal_stack/notifykit` package provides the `notifykit` command.
+The `@signal_stack/notifykit` package provides the `notifykit` command. Prefer a globally installed `notifykit` binary — it needs no download and runs fast. To install it permanently:
 
-Run the CLI without a global install via `bunx @signal_stack/notifykit telegram <chatId> <message>` (or the `npx` equivalent).
+```
+npm i -g @signal_stack/notifykit
+```
 
 Configure the bot token once per machine:
 
 ```
-npx -y @signal_stack/notifykit init --telegram-bot-token <BOT_TOKEN>
+notifykit init --telegram-bot-token <BOT_TOKEN>
 ```
 
 Then send a message:
 
 ```
-npx -y @signal_stack/notifykit telegram <chatId> <message>
+notifykit telegram <chatId> <message>
 ```
+
+If `notifykit` is not installed globally, run it on the fly via `bunx @signal_stack/notifykit telegram <chatId> <message>` (or the `npx` equivalent). The first on-the-fly run downloads the package and can be slow — prefer the global install for repeated commands.
+
+If the CLI returns `401 Unauthorized`, the stored token is invalid or revoked; re-run the `init` command with a valid token from @BotFather.
 
 **Example 1:**
 Input: `notifykit telegram 123456789 "Deploy finished"`
